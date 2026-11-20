@@ -1,0 +1,94 @@
+{
+  "final_model": "Baseline: Linear Regression (distance only)",
+  "rate_per_km": 1.857,
+  "base_fare": 2.973,
+  "rows_completed": 42540,
+  "rows_removed": 7460,
+  "results": [
+    {
+      "Model": "Predict the average",
+      "MAE": 4.9556,
+      "RMSE": 6.208,
+      "R2": -0.0,
+      "Train_R2": 0.0,
+      "CV_RMSE": 6.2971,
+      "Seconds": 0.0532,
+      "MAE_vs_baseline": 2.4646
+    },
+    {
+      "Model": "Baseline: Linear Regression (distance only)",
+      "MAE": 2.491,
+      "RMSE": 3.1031,
+      "R2": 0.7502,
+      "Train_R2": 0.7602,
+      "CV_RMSE": 3.0836,
+      "Seconds": 0.0545,
+      "MAE_vs_baseline": 0.0
+    },
+    {
+      "Model": "Linear Regression (all features)",
+      "MAE": 2.4915,
+      "RMSE": 3.1029,
+      "R2": 0.7502,
+      "Train_R2": 0.7603,
+      "CV_RMSE": 3.0836,
+      "Seconds": 0.1454,
+      "MAE_vs_baseline": 0.0005
+    },
+    {
+      "Model": "Random Forest",
+      "MAE": 2.5141,
+      "RMSE": 3.1424,
+      "R2": 0.7438,
+      "Train_R2": 0.7896,
+      "CV_RMSE": 3.1192,
+      "Seconds": 13.4284,
+      "MAE_vs_baseline": 0.0231
+    },
+    {
+      "Model": "Gradient Boosting",
+      "MAE": 2.4932,
+      "RMSE": 3.1133,
+      "R2": 0.7485,
+      "Train_R2": 0.7652,
+      "CV_RMSE": 3.0927,
+      "Seconds": 6.5626,
+      "MAE_vs_baseline": 0.0022
+    },
+    {
+      "Model": "XGBoost",
+      "MAE": 2.5042,
+      "RMSE": 3.1338,
+      "R2": 0.7452,
+      "Train_R2": 0.7716,
+      "CV_RMSE": 3.1185,
+      "Seconds": 6.6961,
+      "MAE_vs_baseline": 0.0131
+    },
+    {
+      "Model": "Gradient Boosting (tuned)",
+      "MAE": 2.4931,
+      "RMSE": 3.1057,
+      "R2": 0.7497,
+      "Train_R2": 0.7619,
+      "CV_RMSE": 3.0908,
+      "Seconds": 11.3245,
+      "MAE_vs_baseline": 0.0021
+    }
+  ],
+  "importance": {
+    "distance_km": 100.0,
+    "hour": 0.0,
+    "day_of_week": 0.0,
+    "is_weekend": 0.0,
+    "city": 0.0,
+    "payment_method": 0.0
+  },
+  "best_params": {
+    "model__subsample": 0.7,
+    "model__n_estimators": 300,
+    "model__min_samples_leaf": 20,
+    "model__max_depth": 2,
+    "model__learning_rate": 0.02
+  }
+}

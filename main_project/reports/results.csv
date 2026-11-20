@@ -1,0 +1,8 @@
+Model,MAE,RMSE,R2,Train_R2,CV_RMSE,Seconds,MAE_vs_baseline
+Predict the average,4.9556,6.208,-0.0,0.0,6.2971,0.0532,2.4646
+Baseline: Linear Regression (distance only),2.491,3.1031,0.7502,0.7602,3.0836,0.0545,0.0
+Linear Regression (all features),2.4915,3.1029,0.7502,0.7603,3.0836,0.1454,0.0005
+Random Forest,2.5141,3.1424,0.7438,0.7896,3.1192,13.4284,0.0231
+Gradient Boosting,2.4932,3.1133,0.7485,0.7652,3.0927,6.5626,0.0022
+XGBoost,2.5042,3.1338,0.7452,0.7716,3.1185,6.6961,0.0131
+Gradient Boosting (tuned),2.4931,3.1057,0.7497,0.7619,3.0908,11.3245,0.0021

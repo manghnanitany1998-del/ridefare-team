@@ -1,0 +1,3 @@
+0000000000000000000000000000000000000000 71607d3aff40e42260b6581e369b1bcee63d794a Manghnani <tanya.manghnani@dxc.com> 1795104734 +0530	commit (initial): RideFare fare predictor
+71607d3aff40e42260b6581e369b1bcee63d794a 71607d3aff40e42260b6581e369b1bcee63d794a Manghnani <tanya.manghnani@dxc.com> 1795104750 +0530	Branch: renamed refs/heads/master to refs/heads/main
+71607d3aff40e42260b6581e369b1bcee63d794a 314461b9939ceb8e7ab7dcd12b433158c82b10c3 Tanya Manghnani <manghnanitany1998@gmail.com> 1795105160 +0530	commit (amend): RideFare: ML ride fare prediction app

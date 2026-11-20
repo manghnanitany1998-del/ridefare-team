@@ -1,0 +1,36 @@
+{
+  "best_model": "Histogram Gradient Boosting",
+  "rows": 29636,
+  "models": {
+    "Linear Regression": {
+      "MAE": 36.936,
+      "RMSE": 98.018,
+      "R2": 0.52,
+      "Train_R2": 0.539,
+      "MedianAE": 21.472,
+      "MAPE_%": 18.515,
+      "Within_Rs20_%": 47.368,
+      "Train_sec": 0.1
+    },
+    "Random Forest": {
+      "MAE": 14.191,
+      "RMSE": 19.413,
+      "R2": 0.981,
+      "Train_R2": 0.995,
+      "MedianAE": 11.407,
+      "MAPE_%": 9.969,
+      "Within_Rs20_%": 76.333,
+      "Train_sec": 1.4
+    },
+    "Histogram Gradient Boosting": {
+      "MAE": 12.941,
+      "RMSE": 16.686,
+      "R2": 0.986,
+      "Train_R2": 0.987,
+      "MedianAE": 10.848,
+      "MAPE_%": 9.395,
+      "Within_Rs20_%": 79.285,
+      "Train_sec": 1.2
+    }
+  }
+}
