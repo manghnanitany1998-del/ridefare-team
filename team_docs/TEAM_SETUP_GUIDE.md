@@ -78,7 +78,7 @@ It opens at **http://localhost:8501**. Stop it with **Ctrl + C**.
 | Part | How it works |
 |---|---|
 | Place search | Pick a country, then pickup and drop-off. 34,000+ cities + 85 Indian landmarks from `data/places.csv` (works offline) |
-| Map | Dark interactive Leaflet map with CARTO tiles when online; a drawn trip sketch when offline |
+| Map | Interactive Leaflet map with OpenStreetMap tiles (no API key), dark styled, when online; a drawn trip sketch when offline |
 | City trip (same city on the map) | The trained model predicts the fare from distance, hour, weekday, weekend, city, payment, at any length |
 | Intercity (different cities on the map) | A labelled **rule**, not the model: one-way km × ₹/km, driver allowance, tolls, 5% GST |
 | India price level | Sidebar slider (default 0.12) scales Indian city fares, because the model learned US prices |

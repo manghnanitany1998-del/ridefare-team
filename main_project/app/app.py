@@ -22,6 +22,14 @@ def haversine_km(lon1, lat1, lon2, lat2):
     a = np.sin((lat2 - lat1) / 2) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin((lon2 - lon1) / 2) ** 2
     return 6371.0088 * 2 * np.arcsin(np.sqrt(np.clip(a, 0, 1)))
 
+# Render HTML blocks cleanly: Markdown shows indented lines as code, so strip indentation first.
+_st_markdown = st.markdown
+def _html_markdown(body, *args, **kwargs):
+    if kwargs.get("unsafe_allow_html") and isinstance(body, str):
+        body = "\n".join(line.strip() for line in body.splitlines() if line.strip())
+    return _st_markdown(body, *args, **kwargs)
+st.markdown = _html_markdown
+
 st.set_page_config(page_title="RideFare", page_icon="🚕", layout="wide", initial_sidebar_state="collapsed")
 
 # ============================================================ STYLE (Uber-like: black & white, bold type)
@@ -39,7 +47,9 @@ h1, h2, h3, h4, p, label, span, div, li {color: #f2f2f2;}
       display:flex; align-items:center; gap: 28px; margin-bottom: 30px; backdrop-filter: blur(8px);}
 .nav .logo {font-size: 1.6rem; font-weight: 800; color:#fff; letter-spacing:-.5px;}
 .nav .logo b {color:#06C167;}
-.nav .lk {color:#cfcfcf; font-weight:500; font-size:.95rem;}
+.nav .lk {color:#cfcfcf !important; font-weight:500; font-size:.95rem; text-decoration:none; cursor:pointer;}
+.nav .lk:hover {color:#06C167 !important;}
+.nav .pill, .nav .ghost {cursor:default;}
 .nav .rt {margin-left:auto; display:flex; gap:10px;}
 .nav .pill {background:#fff; color:#000 !important; border-radius:999px; padding:7px 14px; font-size:.85rem; font-weight:600;}
 .nav .ghost {color:#fff; border:1px solid #333; border-radius:999px; padding:7px 14px; font-size:.85rem; font-weight:500;}
@@ -106,7 +116,7 @@ iframe, [data-testid="stDeckGlJsonChart"], [data-testid="stCustomComponentV1"] {
 st.markdown("""
 <div class="nav">
   <span class="logo">Ride<b>Fare</b></span>
-  <span class="lk">Ride</span><span class="lk">Drive</span><span class="lk">Business</span><span class="lk">About</span>
+  <a class="lk" href="#ride" target="_self">Ride</a><a class="lk" href="#trip" target="_self">Your trip</a><a class="lk" href="#history" target="_self">History</a><a class="lk" href="#about" target="_self">About</a>
   <div class="rt"><span class="ghost">🤖 ML fare estimator</span><span class="pill">🌍 244 countries</span></div>
 </div>""", unsafe_allow_html=True)
 
@@ -334,7 +344,7 @@ with st.sidebar:
     st.markdown("#### All models tried")
     tbl = pd.DataFrame({n: {k: v for k, v in m.items() if k != "band_report"} for n, m in allm.items()}).T.sort_values("RMSE")
     tbl.insert(0, "Pick", ["🏆" if n == bundle["model_name"] else "" for n in tbl.index])
-    st.dataframe(tbl.round(3), use_container_width=True)
+    st.dataframe(tbl.round(3), width="stretch")
     st.caption("Lower MAE/RMSE = better · R² closer to 1 = better")
     with st.expander("📖 What the metrics mean"):
         st.markdown("- **MAE**: average error\n- **RMSE**: punishes big misses (used to pick)\n"
@@ -362,7 +372,7 @@ with st.sidebar:
                                  expanded=n == bundle["model_name"]):
                     rdf = pd.DataFrame({k: v for k, v in rep.items() if isinstance(v, dict)}).T
                     rdf["support"] = rdf["support"].astype(int)
-                    st.dataframe(rdf.round(3), use_container_width=True)
+                    st.dataframe(rdf.round(3), width="stretch")
     else:
         st.caption("Regression model: judged on MAE, RMSE and R² (table above).")
 
@@ -440,6 +450,7 @@ DEFAULTS = {"India": ("Hawa Mahal, Jaipur", "Jaipur International Airport"),
 L, R = st.columns([1, 1.45], gap="large")
 
 with L:
+    st.markdown("<div id='ride'></div>", unsafe_allow_html=True)
     st.markdown("<div class='h-title'>Go anywhere<br>with Ride<b>Fare</b></div>"
                 "<div class='h-sub'>Request a ride, hop in, and go. Fares predicted by machine learning.</div>",
                 unsafe_allow_html=True)
@@ -474,7 +485,7 @@ with L:
                            format_func=lambda p: {"Card": "💳 Card", "Cash": "💵 Cash", "UPI": "📱 UPI",
                                                   "Wallet": "👛 Wallet"}[p])
     sig = (country, pickup and pickup["label"], dropoff and dropoff["label"], when_key, passengers, payment)
-    if st.button("See prices", type="primary", use_container_width=True):
+    if st.button("See prices", type="primary", width="stretch"):
         st.session_state["quote"] = sig
 quoted = st.session_state.get("quote") == sig and pickup is not None and dropoff is not None
 
@@ -501,7 +512,7 @@ def second(usd):
 import streamlit.components.v1 as components
 
 def draw_map(p, d, path=None, height=560):
-    """Interactive dark map with Leaflet + CARTO tiles. Needs internet for tiles; falls back to a
+    """Interactive map with Leaflet + OpenStreetMap tiles (no API key), styled dark. Needs internet for tiles; falls back to a
     built-in route sketch when offline so the page never shows a blank box."""
     pts = [x for x in (p, d) if x]
     if not IS_ONLINE or not pts:
@@ -515,11 +526,12 @@ def draw_map(p, d, path=None, height=560):
     html = f"""
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>.leaflet-tile-pane{{filter: invert(100%) hue-rotate(180deg) brightness(.95) contrast(.9);}}</style>
 <div id="m" style="height:{height}px;border-radius:18px;background:#0b0b0b"></div>
 <script>
 const map = L.map('m', {{zoomControl:true, attributionControl:true}});
-L.tileLayer('https://{{s}}.basemaps.cartocdn.com/dark_all/{{z}}/{{x}}/{{y}}{{r}}.png',
-  {{maxZoom: 19, attribution: '&copy; OpenStreetMap &copy; CARTO'}}).addTo(map);
+L.tileLayer('https://tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png',
+  {{maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}}).addTo(map);
 const pts = {markers};
 const ll = {latlngs};
 let b = [];
@@ -565,7 +577,7 @@ if not quoted:
         st.caption(f"💱 Fares in **{CODE}** for {country} (1 USD = {RATE:,.2f} {CODE}, {RSRC})"
                    + ("" if CODE == "INR" else " · INR shown alongside"))
     with L:
-        st.markdown("<div class='empty' style='margin-top:16px'>Choose your pickup and dropoff, then tap "
+        st.markdown("<div id='trip'></div><div class='empty' style='margin-top:16px'>Choose your pickup and dropoff, then tap "
                     "<b>See prices</b> to compare rides.</div>", unsafe_allow_html=True)
 
 # ============================================================ AFTER QUOTE
@@ -613,7 +625,7 @@ else:
     available = [n for n in RIDES if SEATS[n] >= passengers and not (intercity and n in NO_INTERCITY)]
 
     with L:
-        st.markdown("<div class='sec'>Choose a ride</div>", unsafe_allow_html=True)
+        st.markdown("<div id='trip'></div><div class='sec'>Choose a ride</div>", unsafe_allow_html=True)
         def ride_label(n):
             q = quotes[n]
             surge = f"  ⚡{q['surge']}×" if q["surge"] > 1 else ""
@@ -631,7 +643,7 @@ else:
         if len(available) < len(RIDES):
             st.caption(f"Some rides are hidden: not enough seats for {passengers} riders.")
 
-        if st.button(f"Request {nm(ride)}", type="primary", use_container_width=True):
+        if st.button(f"Request {nm(ride)}", type="primary", width="stretch"):
             st.session_state["requested"] = (sig, ride)
             st.toast("Ride requested (demo) – finding your driver…", icon="🚕")
 
@@ -653,7 +665,7 @@ else:
             bd = pd.DataFrame([(k, round(v * RATE, DEC), round(v * usd_to_inr)) for k, v in P["lines"] if abs(v) > 0.004],
                               columns=["Item", CODE, "INR (₹)"])
             bd.loc[len(bd)] = ["Total", round(fare * RATE, DEC), round(fare * usd_to_inr)]
-            st.dataframe(bd, hide_index=True, use_container_width=True)
+            st.dataframe(bd, hide_index=True, width="stretch")
             st.caption("The ML model predicts the trip fare; ride type, surge, fees and tax are business rules on top.")
         if passengers > 1:
             st.caption(f"👥 Split {passengers} ways: **{money(fare / passengers)}** each ({second(fare / passengers)})")
@@ -717,20 +729,23 @@ else:
             "Ride": nm(ride), "Km": round(km, 1), CUR_COL: round(fare * RATE, DEC), "Fare (₹)": round(fare * usd_to_inr)})
 
 # ============================================================ FOOTER
-st.markdown("<div style='height:24px'></div>", unsafe_allow_html=True)
+st.markdown("<div id='history' style='height:24px'></div>", unsafe_allow_html=True)
 f1, f2 = st.columns(2)
 with f1:
+    if not st.session_state.get("history"):
+        st.caption("🕘 Recent estimates will appear here after you tap See prices.")
     if st.session_state.get("history"):
         with st.expander(f"🕘 Recent estimates ({len(st.session_state['history'])})"):
             hist = pd.DataFrame(st.session_state["history"])
-            st.dataframe(hist, hide_index=True, use_container_width=True)
+            st.dataframe(hist, hide_index=True, width="stretch")
             c1, c2 = st.columns(2)
             c1.download_button("Download CSV", hist.to_csv(index=False), "fare_estimates.csv", "text/csv")
             if c2.button("Clear history"):
                 st.session_state["history"] = []
                 st.rerun()
 with f2:
-    with st.expander("ℹ️ How it works"):
+    st.markdown("<div id='about'></div>", unsafe_allow_html=True)
+    with st.expander("ℹ️ How it works", expanded=False):
         st.write(
             f"**Model:** {bundle['model_name']} · test MAE ${MAE:.2f} · R² {bundle['metrics']['R2']:.3f} "
             "(full report in the sidebar, open it with **>** at the top left)\n\n"
